@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Built-In Estimate Intake — Formo Renovation</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #191816;
+    --surface:  #211F1C;
+    --border:   #2E2B27;
+    --gold:     #C9A96E;
+    --gold-dim: #7A6440;
+    --cream:    #F8F4EF;
+    --muted:    #6B6560;
+    --white:    #FFFFFF;
+    --red:      #C0624A;
+    --green:    #6B9E78;
+    --radius:   10px;
+    --transition: 0.18s ease;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(25,24,22,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; height: 56px;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600; letter-spacing: 0.12em;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .logo span { color: var(--cream); font-weight: 300; }
+  .header-tag {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Progress bar ── */
+  #progress-bar {
+    height: 2px; background: var(--border);
+    position: sticky; top: 56px; z-index: 99;
+  }
+  #progress-fill {
+    height: 100%; background: var(--gold);
+    width: 0%; transition: width 0.35s ease;
+  }
+
+  /* ── Layout ── */
+  main {
+    max-width: 680px; margin: 0 auto;
+    padding: 48px 24px 120px;
+  }
+
+  /* ── Hero ── */
+  .form-hero {
+    margin-bottom: 52px;
+  }
+  .form-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 300; line-height: 1.15;
+    color: var(--cream); margin-bottom: 12px;
+  }
+  .form-hero h1 em {
+    font-style: italic; color: var(--gold);
+  }
+  .form-hero p {
+    color: var(--muted); font-size: 13px;
+    max-width: 440px; line-height: 1.7;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 44px;
+    padding-bottom: 44px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section:last-of-type { border-bottom: none; }
+
+  .section-label {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .section-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1px solid var(--gold-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--gold); flex-shrink: 0;
+    font-family: 'Jost', sans-serif; font-weight: 500;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 400; letter-spacing: 0.06em;
+    color: var(--cream); text-transform: uppercase;
+  }
+
+  /* ── Field groups ── */
+  .field-row {
+    display: grid; gap: 16px; margin-bottom: 16px;
+  }
+  .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  label {
+    font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  label .req { color: var(--gold); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  select, textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 13px; font-weight: 300;
+    padding: 11px 14px;
+    outline: none;
+    width: 100%;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    -webkit-appearance: none;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,169,110,0.08);
+  }
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  select option { background: var(--surface); color: var(--cream); }
+  textarea { resize: vertical; min-height: 88px; }
+
+  /* number with unit suffix */
+  .input-unit {
+    position: relative;
+  }
+  .input-unit input { padding-right: 40px; }
+  .input-unit .unit {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--muted); pointer-events: none;
+  }
+
+  /* ── Checkbox grid ── */
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    user-select: none;
+  }
+  .check-item:hover { border-color: var(--gold-dim); }
+  .check-item.active {
+    border-color: var(--gold);
+    background: rgba(201,169,110,0.07);
+  }
+  .check-item .icon {
+    width: 18px; height: 18px; border-radius: 4px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background var(--transition), border-color var(--transition);
+  }
+  .check-item.active .icon {
+    background: var(--gold); border-color: var(--gold);
+  }
+  .check-item .icon svg { display: none; }
+  .check-item.active .icon svg { display: block; }
+  .check-box-label { font-size: 12px; color: var(--cream); line-height: 1.3; }
+
+  /* ── Radio style options ── */
+  .radio-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .radio-pill {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px; color: var(--muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    user-select: none;
+  }
+  .radio-pill:hover { border-color: var(--gold-dim); color: var(--cream); }
+  .radio-pill.active {
+    border-color: var(--gold); color: var(--gold);
+    background: rgba(201,169,110,0.06);
+  }
+
+  /* ── Budget slider ── */
+  .budget-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 300; color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .budget-display span { font-size: 16px; color: var(--muted); }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 2px;
+    background: linear-gradient(to right, var(--gold) var(--pct,50%), var(--border) var(--pct,50%));
+    border: none; border-radius: 2px; outline: none; cursor: pointer;
+    padding: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+  .budget-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 8px; font-size: 11px; color: var(--muted);
+  }
+
+  /* ── Photo upload zone ── */
+  .upload-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .upload-slot {
+    aspect-ratio: 1;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px; cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    position: relative; overflow: hidden;
+  }
+  .upload-slot:hover { border-color: var(--gold-dim); background: rgba(201,169,110,0.04); }
+  .upload-slot.has-image { border-color: var(--gold-dim); border-style: solid; }
+  .upload-slot input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+  }
+  .upload-slot img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    border-radius: calc(var(--radius) - 1px);
+  }
+  .upload-slot .slot-label {
+    font-size: 10px; letter-spacing: 0.05em; text-align: center;
+    color: var(--muted); text-transform: uppercase; z-index: 1;
+  }
+  .upload-slot svg { color: var(--muted); z-index: 1; }
+
+  /* ── Divider text ── */
+  .helper-text {
+    font-size: 11px; color: var(--muted); margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  /* ── Conditional panel ── */
+  .conditional {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    margin-top: 0;
+  }
+  .conditional.open {
+    max-height: 400px; opacity: 1; margin-top: 16px;
+  }
+
+  /* ── Submit ── */
+  .submit-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(25,24,22,0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 200;
+  }
+  .submit-bar .completion {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .completion strong { color: var(--gold); font-weight: 500; }
+
+  .btn-submit {
+    background: var(--gold);
+    color: var(--bg);
+    border: none; border-radius: 100px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 12px 28px; cursor: pointer;
+    transition: background var(--transition), transform var(--transition);
+  }
+  .btn-submit:hover { background: #d9b87e; transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; padding: 10px 22px;
+    font-size: 12px; color: var(--cream);
+    opacity: 0; pointer-events: none;
+    transition: all 0.25s ease; z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: var(--green); color: var(--green); }
+  #toast.error   { border-color: var(--red);   color: var(--red);   }
+
+  /* ── Responsive ── */
+  @media (max-width: 520px) {
+    .field-row.cols-2, .field-row.cols-3 { grid-template-columns: 1fr; }
+    main { padding: 32px 16px 110px; }
+    header { padding: 0 16px; }
+    .submit-bar { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Formo <span>Renovation</span></div>
+  <div class="header-tag">Built-In Estimate Intake</div>
+</header>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+
+<main>
+
+  <div class="form-hero">
+    <h1>Built-In<br><em>Design & Estimate</em></h1>
+    <p>Complete this intake before your consultation. The more detail you provide, the more accurate your estimate will be.</p>
+  </div>
+
+  <!-- ─── 1. CLIENT INFORMATION ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">1</div>
+      <div class="section-title">Client Information</div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="clientName" placeholder="Jane Smith" oninput="updateProgress()">
+      </div>
+      <div class="field">
+        <label>Phone <span class="req">*</span></label>
+        <input type="tel" id="clientPhone" placeholder="(615) 000-0000" oninput="updateProgress()">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="clientEmail" placeholder="jane@email.com" oninput="updateProgress()">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Property Address <span class="req">*</span></label>
+        <input type="text" id="propertyAddress" placeholder="123 Oak Lane, Nashville, TN 37201" oninput="updateProgress()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 2. PROJECT LOCATION ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">2</div>
+      <div class="section-title">Project Location</div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Room / Area</label>
+        <select id="roomArea" onchange="updateProgress()">
+          <option value="">Select room</option>
+          <option>Living Room</option>
+          <option>Family Room</option>
+          <option>Master Bedroom</option>
+          <option>Bedroom</option>
+          <option>Home Office</option>
+          <option>Dining Room</option>
+          <option>Basement</option>
+          <option>Hallway / Nook</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Purpose of Built-In</label>
+        <select id="purpose" onchange="updateProgress()">
+          <option value="">Select purpose</option>
+          <option>Entertainment Center</option>
+          <option>Bookshelf / Library</option>
+          <option>Home Office</option>
+          <option>Fireplace Surround</option>
+          <option>Closet / Storage</option>
+          <option>Window Seat</option>
+          <option>Mudroom Bench</option>
+          <option>Custom / Mixed</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 3. DIMENSIONS ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">3</div>
+      <div class="section-title">Room Dimensions</div>
+    </div>
+    <p class="helper-text" style="margin-bottom:16px;">Measure the wall where the built-in will be installed. Approximate is fine — we'll verify on-site.</p>
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Wall Width</label>
+        <div class="input-unit">
+          <input type="number" id="wallWidth" placeholder="0" min="0" step="0.5" oninput="updateProgress()">
+          <span class="unit">ft</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Wall Height</label>
+        <div class="input-unit">
+          <input type="number" id="wallHeight" placeholder="0" min="0" step="0.5" oninput="updateProgress()">
+          <span class="unit">ft</span>
+        </div>
+      </div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Ceiling Height</label>
+        <div class="input-unit">
+          <input type="number" id="ceilingHeight" placeholder="0" min="0" step="0.5" oninput="updateProgress()">
+          <span class="unit">ft</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Available Depth</label>
+        <div class="input-unit">
+          <input type="number" id="depth" placeholder="0" min="0" step="1" oninput="updateProgress()">
+          <span class="unit">in</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 4. STYLE & DESIGN ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">4</div>
+      <div class="section-title">Style & Design</div>
+    </div>
+
+    <div class="field" style="margin-bottom:20px;">
+      <label>Preferred Style</label>
+      <div class="radio-row" id="styleOptions">
+        <div class="radio-pill active" onclick="selectPill(this,'styleOptions')">Modern</div>
+        <div class="radio-pill" onclick="selectPill(this,'styleOptions')">Traditional</div>
+        <div class="radio-pill" onclick="selectPill(this,'styleOptions')">Transitional</div>
+        <div class="radio-pill" onclick="selectPill(this,'styleOptions')">Farmhouse</div>
+        <div class="radio-pill" onclick="selectPill(this,'styleOptions')">Mid-Century</div>
+        <div class="radio-pill" onclick="selectPill(this,'styleOptions')">Coastal</div>
+        <div class="radio-pill" onclick="selectPill(this,'styleOptions')">Industrial</div>
+      </div>
+    </div>
+
+    <div class="field-row cols-2" style="margin-bottom:20px;">
+      <div class="field">
+        <label>Preferred Finish Color</label>
+        <select id="colorPref" onchange="updateProgress()">
+          <option value="">Select finish</option>
+          <option>White (Bright/Pure)</option>
+          <option>Off-White / Cream</option>
+          <option>Greige / Warm Gray</option>
+          <option>Charcoal / Dark Gray</option>
+          <option>Black</option>
+          <option>Navy Blue</option>
+          <option>Natural Wood</option>
+          <option>Stained Wood</option>
+          <option>Custom (specify below)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Material Preference</label>
+        <select id="materialPref" onchange="updateProgress()">
+          <option value="">Select material</option>
+          <option>MDF (Painted)</option>
+          <option>Plywood + Paint Grade</option>
+          <option>Solid Wood</option>
+          <option>Hardwood Veneer</option>
+          <option>Melamine</option>
+          <option>Mix (MDF + Hardwood)</option>
+          <option>Open to Recommendation</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:20px;">
+      <label>Hardware Style</label>
+      <div class="radio-row" id="hardwareOptions">
+        <div class="radio-pill active" onclick="selectPill(this,'hardwareOptions')">No Hardware</div>
+        <div class="radio-pill" onclick="selectPill(this,'hardwareOptions')">Brushed Nickel</div>
+        <div class="radio-pill" onclick="selectPill(this,'hardwareOptions')">Matte Black</div>
+        <div class="radio-pill" onclick="selectPill(this,'hardwareOptions')">Brass / Gold</div>
+        <div class="radio-pill" onclick="selectPill(this,'hardwareOptions')">Satin Bronze</div>
+        <div class="radio-pill" onclick="selectPill(this,'hardwareOptions')">Chrome</div>
+        <div class="radio-pill" onclick="selectPill(this,'hardwareOptions')">Client Provides</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Paint Sheen (if painted)</label>
+      <div class="radio-row" id="sheenOptions">
+        <div class="radio-pill active" onclick="selectPill(this,'sheenOptions')">Satin</div>
+        <div class="radio-pill" onclick="selectPill(this,'sheenOptions')">Semi-Gloss</div>
+        <div class="radio-pill" onclick="selectPill(this,'sheenOptions')">Eggshell</div>
+        <div class="radio-pill" onclick="selectPill(this,'sheenOptions')">Matte</div>
+        <div class="radio-pill" onclick="selectPill(this,'sheenOptions')">Undecided</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 5. FEATURES ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">5</div>
+      <div class="section-title">Features Requested</div>
+    </div>
+    <p class="helper-text" style="margin-bottom:16px;">Select all that apply.</p>
+    <div class="check-grid" id="featureGrid">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Open Shelves</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Cabinets</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Drawers</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)" data-trigger="tv-panel">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">TV Area</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)" data-trigger="fp-panel">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Fireplace</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">LED Lighting</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Hidden Storage</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Crown Molding</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Glass Doors</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Window Seat</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Desk / Workspace</span>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="icon"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#191816" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="check-box-label">Bar / Beverage Area</span>
+      </div>
+    </div>
+
+    <!-- TV conditional -->
+    <div class="conditional" id="tv-panel">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;">
+        <p class="helper-text" style="margin-bottom:12px; letter-spacing:0.05em; text-transform:uppercase; font-size:10px;">TV Details</p>
+        <div class="field-row cols-2">
+          <div class="field">
+            <label>TV Size</label>
+            <select id="tvSize">
+              <option value="">Select size</option>
+              <option>Up to 55"</option>
+              <option>55" – 65"</option>
+              <option>65" – 75"</option>
+              <option>75" – 85"</option>
+              <option>85"+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mount Type</label>
+            <select id="tvMount">
+              <option value="">Select mount</option>
+              <option>Flush / Fixed</option>
+              <option>Tilting</option>
+              <option>Full-Motion Swivel</option>
+              <option>Recessed (hidden)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fireplace conditional -->
+    <div class="conditional" id="fp-panel">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;">
+        <p class="helper-text" style="margin-bottom:12px; letter-spacing:0.05em; text-transform:uppercase; font-size:10px;">Fireplace Details</p>
+        <div class="field-row cols-2">
+          <div class="field">
+            <label>Fireplace Type</label>
+            <select id="fpType">
+              <option value="">Select type</option>
+              <option>Existing / Framed In</option>
+              <option>Electric Insert (new)</option>
+              <option>Gas Insert (existing)</option>
+              <option>Decorative Only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Firebox Opening Width</label>
+            <div class="input-unit">
+              <input type="number" id="fpWidth" placeholder="0" min="0" step="1">
+              <span class="unit">in</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 6. ELECTRICAL & HVAC ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">6</div>
+      <div class="section-title">Electrical & HVAC</div>
+    </div>
+    <p class="helper-text" style="margin-bottom:16px;">Describe existing outlet, switch, or vent locations on the target wall. Leave blank if none.</p>
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Outlet Locations</label>
+        <input type="text" id="outlets" placeholder="e.g. 18" from floor, center wall">
+      </div>
+      <div class="field">
+        <label>Switch Locations</label>
+        <input type="text" id="switches" placeholder="e.g. right side, 48" AFF">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>HVAC Vents / Returns</label>
+        <input type="text" id="hvac" placeholder="e.g. floor vent, bottom-left corner">
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px;">
+      <label>Electrical Work Needed</label>
+      <div class="radio-row" id="electricalOptions">
+        <div class="radio-pill active" onclick="selectPill(this,'electricalOptions')">None / Unknown</div>
+        <div class="radio-pill" onclick="selectPill(this,'electricalOptions')">Add outlets</div>
+        <div class="radio-pill" onclick="selectPill(this,'electricalOptions')">Relocate outlets</div>
+        <div class="radio-pill" onclick="selectPill(this,'electricalOptions')">LED strip wiring</div>
+        <div class="radio-pill" onclick="selectPill(this,'electricalOptions')">Full electrical work</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 7. PHOTOS ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">7</div>
+      <div class="section-title">Site Photos</div>
+    </div>
+    <p class="helper-text" style="margin-bottom:16px;">Upload photos of the wall and space. Inspiration images are welcome.</p>
+    <div class="upload-grid">
+      <div class="upload-slot" id="slot-front">
+        <input type="file" accept="image/*" onchange="previewImage(this,'slot-front')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="slot-label">Front Wall</span>
+      </div>
+      <div class="upload-slot" id="slot-left">
+        <input type="file" accept="image/*" onchange="previewImage(this,'slot-left')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="slot-label">Left Angle</span>
+      </div>
+      <div class="upload-slot" id="slot-right">
+        <input type="file" accept="image/*" onchange="previewImage(this,'slot-right')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="slot-label">Right Angle</span>
+      </div>
+      <div class="upload-slot" id="slot-ceiling">
+        <input type="file" accept="image/*" onchange="previewImage(this,'slot-ceiling')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="slot-label">Ceiling</span>
+      </div>
+      <div class="upload-slot" id="slot-floor">
+        <input type="file" accept="image/*" onchange="previewImage(this,'slot-floor')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="slot-label">Floor</span>
+      </div>
+      <div class="upload-slot" id="slot-inspo">
+        <input type="file" accept="image/*" onchange="previewImage(this,'slot-inspo')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span class="slot-label">Inspiration</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 8. BUDGET & TIMELINE ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">8</div>
+      <div class="section-title">Budget & Timeline</div>
+    </div>
+
+    <div class="field" style="margin-bottom:28px;">
+      <label>Approximate Budget</label>
+      <div class="budget-display" id="budgetDisplay">$5,000 <span>– $10,000</span></div>
+      <input type="range" id="budgetSlider" min="0" max="100" value="40" oninput="updateBudget(this)">
+      <div class="budget-labels"><span>$1,000</span><span>$5,000</span><span>$10,000</span><span>$20,000</span><span>$30,000+</span></div>
+    </div>
+
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Desired Start Date</label>
+        <input type="date" id="startDate" oninput="updateProgress()">
+      </div>
+      <div class="field">
+        <label>Flexibility</label>
+        <select id="flexibility">
+          <option value="">Select</option>
+          <option>Firm date</option>
+          <option>Within 2 weeks</option>
+          <option>Within a month</option>
+          <option>2–3 months out</option>
+          <option>Flexible</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 9. ADDITIONAL NOTES ─── -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-num">9</div>
+      <div class="section-title">Additional Notes</div>
+    </div>
+    <div class="field">
+      <label>Anything else we should know</label>
+      <textarea id="notes" placeholder="Special requests, concerns, access instructions, how you heard about us…" rows="5" oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+</main>
+
+<!-- Submit bar -->
+<div class="submit-bar">
+  <div class="completion">Completion <strong id="pct">0%</strong></div>
+  <button class="btn-submit" onclick="submitForm()">Send to Formo →</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ── Pill selector ──
+  function selectPill(el, groupId) {
+    document.querySelectorAll('#' + groupId + ' .radio-pill')
+      .forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Checkbox toggle ──
+  function toggleCheck(el) {
+    el.classList.toggle('active');
+    const trigger = el.dataset.trigger;
+    if (trigger) {
+      const panel = document.getElementById(trigger);
+      if (panel) panel.classList.toggle('open', el.classList.contains('active'));
+    }
+    updateProgress();
+  }
+
+  // ── Photo preview ──
+  function previewImage(input, slotId) {
+    const slot = document.getElementById(slotId);
+    const file = input.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    slot.querySelectorAll('svg, .slot-label').forEach(e => e.style.opacity = '0');
+    const existing = slot.querySelector('img');
+    if (existing) existing.remove();
+    const img = document.createElement('img');
+    img.src = url; slot.appendChild(img);
+    slot.classList.add('has-image');
+  }
+
+  // ── Budget slider ──
+  const budgetRanges = [
+    [1000,2000],[2000,4000],[3000,6000],[5000,10000],
+    [7000,12000],[10000,18000],[15000,25000],[20000,30000],['30,000','+']
+  ];
+  function updateBudget(el) {
+    const v = parseInt(el.value);
+    const idx = Math.floor(v / 100 * (budgetRanges.length - 1));
+    const r = budgetRanges[idx];
+    const display = document.getElementById('budgetDisplay');
+    if (r[1] === '+') {
+      display.innerHTML = `$${r[0]} <span>or more</span>`;
+    } else {
+      display.innerHTML = `$${r[0].toLocaleString()} <span>– $${r[1].toLocaleString()}</span>`;
+    }
+    const pct = v + '%';
+    el.style.setProperty('--pct', pct);
+  }
+  // Init slider gradient
+  document.getElementById('budgetSlider').style.setProperty('--pct','40%');
+
+  // ── Progress ──
+  const requiredFields = ['clientName','clientPhone','clientEmail','propertyAddress'];
+  const bonusFields = ['roomArea','purpose','wallWidth','wallHeight','colorPref','materialPref','startDate','notes'];
+
+  function updateProgress() {
+    let filled = 0;
+    const total = requiredFields.length + bonusFields.length;
+    requiredFields.forEach(id => {
+      if (document.getElementById(id)?.value?.trim()) filled++;
+    });
+    bonusFields.forEach(id => {
+      if (document.getElementById(id)?.value?.trim()) filled++;
+    });
+    const pct = Math.round(filled / total * 100);
+    document.getElementById('pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // ── Submit ──
+  function submitForm() {
+    const required = requiredFields.map(id => document.getElementById(id));
+    const missing = required.filter(el => !el?.value?.trim());
+    if (missing.length) {
+      missing[0].focus();
+      missing[0].style.borderColor = 'var(--red)';
+      setTimeout(() => missing[0].style.borderColor = '', 2000);
+      showToast('Please complete required fields', 'error');
+      return;
+    }
+
+    // Gather data
+    const data = {
+      client: {
+        name:    document.getElementById('clientName').value,
+        phone:   document.getElementById('clientPhone').value,
+        email:   document.getElementById('clientEmail').value,
+        address: document.getElementById('propertyAddress').value,
+      },
+      project: {
+        room:    document.getElementById('roomArea').value,
+        purpose: document.getElementById('purpose').value,
+        style:   document.querySelector('#styleOptions .active')?.textContent,
+        color:   document.getElementById('colorPref').value,
+        material:document.getElementById('materialPref').value,
+        hardware:document.querySelector('#hardwareOptions .active')?.textContent,
+      },
+      dimensions: {
+        wallWidth:     document.getElementById('wallWidth').value,
+        wallHeight:    document.getElementById('wallHeight').value,
+        ceilingHeight: document.getElementById('ceilingHeight').value,
+        depth:         document.getElementById('depth').value,
+      },
+      features: [...document.querySelectorAll('#featureGrid .check-item.active')]
+        .map(el => el.querySelector('.check-box-label').textContent),
+      budget: document.getElementById('budgetDisplay').textContent.trim(),
+      startDate: document.getElementById('startDate').value,
+      notes: document.getElementById('notes').value,
+    };
+
+    console.log('Formo Built-In Intake:', data);
+    showToast('Intake submitted — Formo will be in touch', 'success');
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + type;
+    setTimeout(() => t.className = '', 3000);
+  }
+</script>
+</body>
+</html>
