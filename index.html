@@ -1065,16 +1065,47 @@ function updateBudget(el){
 document.getElementById('budgetSlider').style.setProperty('--pct','40%');
 
 // ════ SITE PHOTOS ════
+const SITE_SLOTS = ['ps-front','ps-left','ps-right','ps-ceiling','ps-floor','ps-detail'];
+const sitePhotoFiles = {}; // slotId -> { file, localUrl }
+
 function previewPhoto(input, slotId){
   const slot = document.getElementById(slotId);
   const file = input.files[0];
   if (!file) return;
   const url = URL.createObjectURL(file);
+  sitePhotoFiles[slotId] = { file, localUrl: url };
   slot.querySelectorAll('svg,.ps-label').forEach(e => e.style.opacity = '0');
   slot.querySelector('img')?.remove();
   const img = document.createElement('img');
   img.src = url; slot.appendChild(img);
   slot.classList.add('has-image');
+}
+
+async function uploadSitePhotos(intakeId){
+  if (!storage) return {};
+  const urls = {};
+  const slots = Object.entries(sitePhotoFiles);
+  if (!slots.length) return urls;
+  for (let i = 0; i < slots.length; i++){
+    const [slotId, item] = slots[i];
+    try {
+      const label = slotId.replace('ps-','');
+      const ref = storage.ref(`builtin_intakes/${intakeId}/site_${label}_${Date.now()}`);
+      const task = ref.put(item.file);
+      await new Promise((res, rej) => {
+        task.on('state_changed',
+          snap => {
+            const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+            setGlobalProgress(((i + pct/100) / slots.length) * 100);
+          },
+          rej,
+          res
+        );
+      });
+      urls[label] = await task.snapshot.ref.getDownloadURL();
+    } catch(e){ console.error('Site photo upload failed:', slotId, e); }
+  }
+  return urls;
 }
 
 // ════ INSPIRATION PHOTOS (up to 10, upload to Firebase Storage) ════
@@ -1188,7 +1219,7 @@ async function uploadQuizImage(file, key, type, thumbId, inputId){
 // ════ DATA ════
 function gv(id){ return document.getElementById(id)?.value?.trim() || ''; }
 function activeVal(sel){ return document.querySelector(sel)?.dataset?.val || ''; }
-function gatherData(inspoUrls){
+function gatherData(inspoUrls, siteUrls){
   const materials = {};
   document.querySelectorAll('.chip-row').forEach(row => {
     const key = row.dataset.mat;
@@ -1215,6 +1246,7 @@ function gatherData(inspoUrls){
     budget: document.getElementById('budgetNum').textContent.trim(),
     notes: gv('notes'),
     inspoPhotos: inspoUrls || [],
+    sitePhotos: siteUrls || {},
   };
 }
 
@@ -1233,6 +1265,7 @@ function buildReview(){
     ['Materials', Object.entries(d.materials).map(([k,v]) => `${k}: ${v}`).join('<br>'), 9],
     ['Hardware', d.project.hardware, 10], ['Budget', d.budget, 10],
     ['Notes', d.notes || '—', 11],
+    ...(Object.keys(sitePhotoFiles).length ? [['Site Photos', `${Object.keys(sitePhotoFiles).length} photo${Object.keys(sitePhotoFiles).length>1?'s':''} attached`, 11]] : []),
     ...(inspoFiles.length ? [['Inspiration Photos', `${inspoFiles.length} photo${inspoFiles.length>1?'s':''} attached`, 11]] : []),
   ];
   document.getElementById('reviewList').innerHTML = items.map(([k,v,step]) => `
@@ -1245,19 +1278,30 @@ function buildReview(){
 let redirectTimer, redirectInterval;
 async function submitForm(){
   const btn = document.getElementById('btnNext');
-  btn.disabled = true; btn.textContent = 'Sending…';
+  btn.disabled = true;
 
-  // Upload inspo photos first, get URLs
-  let inspoUrls = [];
-  if (inspoFiles.length > 0 && storage){
-    btn.textContent = `Uploading ${inspoFiles.length} photo${inspoFiles.length>1?'s':''}…`;
-    const tmpId = 'intake_' + Date.now();
-    inspoUrls = await uploadInspoPhotos(tmpId);
+  const intakeId = 'intake_' + Date.now();
+  const hasSite  = Object.keys(sitePhotoFiles).length > 0;
+  const hasInspo = inspoFiles.length > 0;
+  const totalPhotos = Object.keys(sitePhotoFiles).length + inspoFiles.length;
+
+  // Upload site photos
+  let siteUrls = {};
+  if (hasSite && storage){
+    btn.textContent = `Uploading site photos…`;
+    siteUrls = await uploadSitePhotos(intakeId);
   }
 
-  const data = gatherData(inspoUrls);
-  let ok = false;
+  // Upload inspo photos
+  let inspoUrls = [];
+  if (hasInspo && storage){
+    btn.textContent = `Uploading inspiration photos…`;
+    inspoUrls = await uploadInspoPhotos(intakeId);
+  }
+
+  const data = gatherData(inspoUrls, siteUrls);
   btn.textContent = 'Saving…';
+  let ok = false;
 
   if (db){
     try { await db.collection(CONFIG.COLLECTION).add(data); ok = true; } catch(e){ console.error(e); }
@@ -1274,6 +1318,7 @@ async function submitForm(){
         dimensions: `${data.dimensions.width||'?'}ft W × ${data.dimensions.height||'?'}ft H × ${data.dimensions.depth||'?'}in D`,
         source: data.source,
         inspo_count: inspoUrls.length,
+        site_photos: Object.keys(siteUrls).join(', ') || 'none',
       });
       ok = true;
     } catch(e){ console.error(e); }
@@ -1418,7 +1463,26 @@ function renderIntakes(intakes){
           <div class="detail-item" style="grid-column:1/-1"><div class="dk">Features</div><div class="dv">${features}</div></div>
           <div class="detail-item" style="grid-column:1/-1"><div class="dk">Materials</div><div class="dv">${materials}</div></div>
           ${intake.notes ? `<div class="detail-item" style="grid-column:1/-1"><div class="dk">Notes</div><div class="dv">${intake.notes}</div></div>` : ''}
-          ${intake.inspoPhotos?.length ? `<div class="detail-item" style="grid-column:1/-1"><div class="dk">Inspiration Photos (${intake.inspoPhotos.length})</div><div class="dv" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">${intake.inspoPhotos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" loading="lazy"></a>`).join('')}</div></div>` : ''}
+          ${intake.sitePhotos && Object.keys(intake.sitePhotos).length ? `
+            <div class="detail-item" style="grid-column:1/-1">
+              <div class="dk">Site Photos (${Object.keys(intake.sitePhotos).length})</div>
+              <div class="dv" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
+                ${Object.entries(intake.sitePhotos).map(([label,url])=>`
+                  <a href="${url}" target="_blank" style="text-decoration:none;">
+                    <div style="position:relative;">
+                      <img src="${url}" style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;" loading="lazy">
+                      <div style="font-size:8px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:3px;">${label}</div>
+                    </div>
+                  </a>`).join('')}
+              </div>
+            </div>` : ''}
+          ${intake.inspoPhotos?.length ? `
+            <div class="detail-item" style="grid-column:1/-1">
+              <div class="dk">Inspiration Photos (${intake.inspoPhotos.length})</div>
+              <div class="dv" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
+                ${intake.inspoPhotos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" loading="lazy"></a>`).join('')}
+              </div>
+            </div>` : ''}
         </div>
         <div class="intake-actions">
           <button onclick="event.stopPropagation(); location.href='tel:${(intake.client?.phone||'').replace(/\D/g,'')}'">📞 Call</button>
